@@ -71,7 +71,7 @@ const UsersList = () => {
                             <div 
                             className="avatar h-8 w-8 font-bold bg-cyan-100/50 text-cyan-300 rounded-full flex items-center justify-center overflow-hidden">
                                 {user?.imageUrl 
-                                ? <img src={user?.imageUrl} alt={user.username.slice(0, 1).toUpperCase()} className='object-cover w-full h-full'/> 
+                                ? <img src={user?.imageUrl} alt={user.username} className='object-cover w-full h-full'/> 
                                 : user.username.slice(0, 1).toUpperCase()}
                             </div>
                             <span className="name">{user.username}</span>
