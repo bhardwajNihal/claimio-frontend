@@ -1,15 +1,33 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useFetch } from '../custom-hooks/useFetch'
 import toast from 'react-hot-toast';
 import { ClipLoader } from 'react-spinners';
 import { TbCoinFilled } from "react-icons/tb";
 import { FaTrophy } from "react-icons/fa6";
+import {io} from "socket.io-client"
 
+const socket = io(`${import.meta.env.VITE_BACKEND_URL}`);
 
 const Leaderboard = () => {
 
   const { data, loading, error } = useFetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard`)
-  console.log(data);
+  const [leaderboard, setLeaderboard] = useState([]);
+
+  useEffect(() => {
+    if(data && !loading){
+      setLeaderboard(data.leaderboard)
+    }
+  },[data, loading])
+
+  // mounting up socket, it keeps up listening to server events emitted, respond in real time
+  useEffect(() => {
+    socket.on("leaderboard-update", (data) => setLeaderboard(data));
+    
+    return(() => {
+      socket.off("leaderboard-update");     // closing socket connection on unmount
+    })
+  },[]);
+  
 
   if (!loading && error) toast.error(error);
   if (loading) return <div className='w-full flex justify-center items-center pt-24 text-gray-400'><ClipLoader size={"20px"} color='#27C3D6' className='mr-2' />Loading Leaderboard stats...</div>
@@ -23,7 +41,7 @@ const Leaderboard = () => {
           <div className="top-scorers flex justify-center items-end gap-1 mt-4 mb-8">
 
             {[1, 0, 2].map((rank, idx) => {            // looping through the custom array, to display ranks in that order
-              const user = data.leaderboard[rank];
+              const user = leaderboard[rank];
               if (!user) return null;
 
               const rankColors = ["bg-gray-400", "bg-yellow-400", "bg-orange-400"];
@@ -55,8 +73,8 @@ const Leaderboard = () => {
      
     {/* rest in the list */}
       <div className="rest-list">
-        {!loading && data?.leaderboard
-          ? data.leaderboard.slice(3).map((item) =>
+        {leaderboard.length>0 
+          ? leaderboard.slice(3).map((item) =>
             <div key={item.rank} className='flex items-center justify-between px-2 py-1 border-b border-gray-200 hover:bg-gray-100'>
 
               <div className='flex items-center gap-2 overflow-hidden w-full'>
